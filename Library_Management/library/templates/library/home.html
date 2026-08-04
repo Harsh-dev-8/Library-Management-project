@@ -1,0 +1,121 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library</title>
+  <!-- Linking external CSS file -->
+  <link rel="stylesheet" href="{% static 'library/css/home.css' %}">
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="nav-title">Library</span>
+    
+    <span class="nav-username">{{ request.user.username }}</span>
+    
+    <div class="nav-buttons">
+      <!-- MY BORROWED BOOKS POPUP OVERLAY -->
+      <div id="return_content" class="return-overlay">
+        <div class="return-modal">
+          <span class="close" onclick="document.getElementById('return_content').style.display='none'">&times;</span>
+          <h2>My Borrowed Books</h2>
+
+          {% for record in my_borrow_book %}
+            <div class="borrow-row">
+              <div class="borrow-info">
+                <strong class="borrow-book-title">{{ record.book.title }}</strong>
+                <span class="borrow-dates">
+                  Borrowed: {{ record.borrowed_date|date:"F d, Y" }}<br>
+                  Expected Return: {{ record.expected_return_date|date:"F d, Y" }}
+                </span>
+              </div>
+              <form method="POST" action="{% url 'return_book' record.book.id %}">
+                {% csrf_token %}
+                <button class="return-btn" type="submit">Return</button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="empty-message">You haven't borrowed any books.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Trigger button for borrowed books -->
+      <button class="see_borrow_books" type="button" onclick="document.getElementById('return_content').style.display='flex'">
+        My Borrowed Books
+      </button>
+
+      <!-- Logout button -->
+      <a href="{% url 'logout' %}">
+        <button class="logout-btn" type="button">Logout</button>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Clean descriptive header -->
+  <header class="main-header">
+    <h1>Library</h1>
+  </header>
+
+  <!-- Books catalog grid -->
+  <div class="book-grid">
+    {% for book in books %}
+      <div class="book-box">
+        <div>
+          <div class="book-title">{{ book.title }}</div>
+          <div class="book-author">by {{ book.author }}</div>
+          <div class="book-catagory">{{ book.catagory }}</div>
+        </div>
+        
+        <div class="book-status">
+          {% if book.available %}
+            <span class="status-badge status-available">Available</span>
+          {% else %}
+            <span class="status-badge status-borrowed">Unavailable</span>
+          {% endif %}
+        </div>
+
+        <!-- BORROW BUTTON (Opens specific book's modal) -->
+        <button class="borrow-btn" type="button" onclick="document.getElementById('modal-{{ book.id }}').style.display='flex'">
+          Borrow
+        </button>
+      </div>
+
+      <!-- UNIQUE MODAL FOR THIS BOOK -->
+      <div id="modal-{{ book.id }}" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="document.getElementById('modal-{{ book.id }}').style.display='none'">&times;</span>
+          <h2>Confirm Borrow</h2>
+          <p>Are you sure you want to borrow <strong>{{ book.title }}</strong>?</p>
+          <p>Category: <strong>{{ book.catagory }}</strong></p>
+          <p>Status: 
+            {% if book.available %}
+              <span class="status-badge status-available">Available</span>
+            {% else %}
+              <span class="status-badge status-borrowed">Unavailable</span>
+            {% endif %}
+          </p>
+
+          <form method="POST" action="{% url 'record_view' book.id %}">
+            {% csrf_token %}
+            <label for="date-{{ book.id }}">Expected Return Date</label>
+            <input type="date" name="date" id="date-{{ book.id }}" required>
+            
+            {% if book.available %}
+              <button class="confirm" type="submit">Confirm Borrow</button>
+            {% else %}
+              <p style="color: var(--danger); font-weight: bold; margin-top: 16px; text-align: center;">This book is not available.</p>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <p class="empty-message" style="grid-column: 1 / -1;">No books found in the library catalog.</p>
+    {% endfor %}
+  </div>
+
+</body>
+</html>
