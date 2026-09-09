@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse,JsonResponse
 from library.models import *
 from django.contrib.auth import login,authenticate,logout,get_user_model
@@ -31,9 +31,7 @@ def home(request):
     books_obj = Book.objects.all()
     my_borrow_books = Borrow_record.objects.filter(user=request.user, return_date__isnull=True)
 
-    return render(
-    request,
-    "home.html",
+    return render(request, "home.html",
     {
         "books": books_obj,
         "my_borrow_book": my_borrow_books,
@@ -46,7 +44,7 @@ def logout_view(request):
 
 @login_required(login_url="/login/")
 def record_view(request, book_id):
-    book = Book.objects.get(id=book_id)
+    book = get_object_or_404(Book, id=book_id)
     
     if not book.available:
         return HttpResponse("The book is not available")
@@ -73,9 +71,13 @@ def register(request):
         username= request.POST["username"]
         email= request.POST["email"]
         password= request.POST["password"]
+        confirm_password= request.POST["confirm-password"]
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "please enter another username")
+
+        elif password != confirm_password:
+            messages.error(request, "password and confirm password didn't matched")
         else:
             user = User.objects.create_user(
             first_name=fname,
@@ -91,7 +93,7 @@ def register(request):
 @login_required(login_url="/login/")
 def return_book(request, book_id):
     if request.method == "POST":
-        book = Book.objects.get(id=book_id)
+        book = get_object_or_404(Book, id=book_id)
         # Find the active borrow record for this user and book
         record = Borrow_record.objects.filter(user=request.user, book=book, return_date__isnull=True).first()
         
