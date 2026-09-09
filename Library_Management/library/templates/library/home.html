@@ -29,7 +29,7 @@
                 <strong class="borrow-book-title">{{ record.book.title }}</strong>
                 <span class="borrow-dates">
                   Borrowed: {{ record.borrowed_date|date:"F d, Y" }}<br>
-                  Expected Return: {{ record.expected_return_date|date:"F d, Y" }}
+                  Expected Return: {{ record.expected_return_date|date:"F d, Y, P" }}
                 </span>
               </div>
               <form method="POST" action="{% url 'return_book' record.book.id %}">
@@ -102,7 +102,7 @@
           <form method="POST" action="{% url 'record_view' book.id %}">
             {% csrf_token %}
             <label for="date-{{ book.id }}">Expected Return Date</label>
-            <input type="date" name="date" id="date-{{ book.id }}" required>
+            <input type="datetime-local" name="date" id="date-{{ book.id }}" required>
             
             {% if book.available %}
               <button class="confirm" type="submit">Confirm Borrow</button>
