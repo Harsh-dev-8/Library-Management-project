@@ -7,7 +7,8 @@ function updateNavbar() {
         document.querySelector('.logout-btn').addEventListener('click', function(e) {
             e.preventDefault();
             fetch('http://127.0.0.1:8000/api/v1/logout/', {
-                method: 'GET'
+                method: 'GET',
+                credentials: 'include'
             })
             .then(response => response.json())
             .then(data => {

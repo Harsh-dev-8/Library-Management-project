@@ -1,10 +1,31 @@
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 async function loadBooks() {
-    const url = "http://127.0.0.1:8000/api/v1/home/";
+    const url = "http://127.0.0.1:8000/api/v1/GetBooks/";
     const grid = document.getElementById('bookGrid');
+    const csrftoken = getCookie('csrftoken');
 
     try {
         const response = await fetch(url, {
-            credentials: 'include'
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRFToken': csrftoken,
+            }
         });
 
         if (!response.ok) {

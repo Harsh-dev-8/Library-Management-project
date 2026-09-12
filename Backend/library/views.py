@@ -36,7 +36,7 @@ class LogoutAPIView(APIView):
         logout(request)
         return Response({"message": "successfully logged out"})
 
-class HomeAPIView(APIView):
+class GetBooksAPIView(APIView):
     def get(self,request):
         books = Book.objects.all()
         serializer = BookSerializer(books,many=True)
