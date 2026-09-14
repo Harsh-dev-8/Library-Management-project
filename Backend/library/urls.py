@@ -5,5 +5,6 @@ urlpatterns = [
     path('api/v1/register/', views.RegisterAPIView.as_view()),
     path('api/v1/login/', views.LoginAPIView.as_view()),
     path('api/v1/logout/', views.LogoutAPIView.as_view()),
-    path('api/v1/GetBooks/', views.GetBooksAPIView.as_view())
+    path('api/v1/GetBooks/', views.GetBooksAPIView.as_view()),
+    path('api/v1/BorrowBook/', views.BorrowBookAPIView.as_view()),
 ]
