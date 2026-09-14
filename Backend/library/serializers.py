@@ -37,13 +37,11 @@ class BorrowBookSerializer(serializers.ModelSerializer):
         fields = ['expected_return_date', 'book_id']
 
     def validate_book_id(self,data):
-        book = Book.objects.get(id=data)
-        if not book.available:
+        if not data.available:
             raise serializers.ValidationError("The Book is unavailable")
-        return book
+        return data
         
     def validate_expected_return_date(self,data):
-
         if data <= timezone.now():
             raise serializers.ValidationError("Date must be in future!")
 
@@ -55,7 +53,8 @@ class BorrowBookSerializer(serializers.ModelSerializer):
     def validate(self,data):
         user = self.context['request'].user
 
-        record = Borrow_record.objects.filter(user=user).count()
+        # Only count active records
+        record = Borrow_record.objects.filter(user=user,return_date=None).count()
 
         if record >= 5:
             raise serializers.ValidationError("You can't borrow more than 5 books!")
