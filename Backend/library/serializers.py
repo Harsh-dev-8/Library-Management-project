@@ -55,8 +55,30 @@ class BorrowBookSerializer(serializers.ModelSerializer):
 
         # Only count active records
         record = Borrow_record.objects.filter(user=user,return_date=None).count()
-
-        if record >= 5:
+        if record >= 6:
             raise serializers.ValidationError("You can't borrow more than 5 books!")
-
         return data
+
+# Return Book Serializer
+class ReturnBookSerializer(serializers.Serializer):
+    book_id = serializers.IntegerField()
+
+    def validate(self,data):
+        try:
+            book = Book.objects.get(id=data['book_id'])
+        except Book.DoesNotExist:
+            raise serializers.ValidationError("Book doesn't exist")
+        
+        if book.available:
+            raise serializers.ValidationError("You haven't borrowed this book!")
+
+        user = self.context['request'].user
+        try:
+            record = Borrow_record.objects.get(user=user,book_id=book,return_date=None)
+        except Borrow_record.DoesNotExist:
+            raise serializers.ValidationError("record doesn't exist")
+        
+        mydata = {
+            "book": book,
+            "record": record}
+        return mydata

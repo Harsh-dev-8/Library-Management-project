@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from library.serializers import RegisterSerializer,LoginSerializer,BookSerializer,BorrowBookSerializer
+from library.serializers import RegisterSerializer,LoginSerializer,BookSerializer,BorrowBookSerializer,ReturnBookSerializer
 from rest_framework import status
 from django.contrib.auth import authenticate,login,logout
 from library.models import Book,Borrow_record
@@ -64,14 +64,14 @@ class BorrowBookAPIView(APIView):
 # Return Book 
 class ReturnBookAPIView(APIView):
     def post(self,request):
-        try:
-            book = Book.objects.get(id=request.data.get('book_id'))
-        except book.DoesNotExist:
-            return Response({"message": "Book Doesn't Exist!"})
+        serializer = ReturnBookSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid(raise_exception=True):
+            record = serializer.validated_data.get('record')
+            book = serializer.validated_data.get('book')
 
-        record = Borrow_record.objects.get(user=request.user, book_id=book)
+            record.return_date = timezone.now()
+            record.save()
+            book.available = True
+            book.save()
 
-        record.return_date = timezone.now()
-        record.save()
-
-        return Response({"message": f"{book} is returned successfully"})
+            return Response({"message": f"{book} is returned successfully"})
