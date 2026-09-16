@@ -2,10 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('api/v1/register/', views.RegisterAPIView.as_view()),
-    path('api/v1/login/', views.LoginAPIView.as_view()),
-    path('api/v1/logout/', views.LogoutAPIView.as_view()),
-    path('api/v1/GetBooks/', views.GetBooksAPIView.as_view()),
-    path('api/v1/BorrowBook/', views.BorrowBookAPIView.as_view()),
-    path('api/v1/ReturnBook/', views.ReturnBookAPIView.as_view())
+    path('GetBooks/', views.GetBooksAPIView.as_view()),
+    path('BorrowBook/', views.BorrowBookAPIView.as_view()),
+    path('ReturnBook/', views.ReturnBookAPIView.as_view())
 ]

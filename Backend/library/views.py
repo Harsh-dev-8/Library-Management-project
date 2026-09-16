@@ -1,44 +1,10 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from library.serializers import RegisterSerializer,LoginSerializer,BookSerializer,BorrowBookSerializer,ReturnBookSerializer
+from library.serializers import BookSerializer,BorrowBookSerializer,ReturnBookSerializer
 from rest_framework import status
-from django.contrib.auth import authenticate,login,logout
 from library.models import Book,Borrow_record
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
-
-# Register
-class RegisterAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self,request):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response("Your Account has been created successfully",status=status.HTTP_201_CREATED)    
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Login
-class LoginAPIView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-
-        if serializer.is_valid(raise_exception=True):
-            user = authenticate(**serializer.validated_data)
-
-        if user is not None:
-            login(request, user)
-            return Response({"message": f"{request.user} successfully logged in"},status=status.HTTP_200_OK)
-
-        return Response({"message": "invaild credentials"},status=status.HTTP_400_BAD_REQUEST)
-
-# Logout
-class LogoutAPIView(APIView):
-    def get(self,request):
-        logout(request)
-        return Response({"message": f"{request.user} successfully logged out"},status=status.HTTP_200_OK)
 
 # Get all Books
 class GetBooksAPIView(APIView):
@@ -51,7 +17,6 @@ class GetBooksAPIView(APIView):
 class BorrowBookAPIView(APIView):
     def post(self, request):
         serializer = BorrowBookSerializer(data=request.data, context={"request": request})
-
         if serializer.is_valid(raise_exception=True):
             serializer.save(user=request.user)
         
