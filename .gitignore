@@ -4,6 +4,9 @@
 .vscode/
 .idea
 .vscode
+.kilo
+.kilo/
+.venv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
