@@ -2,6 +2,8 @@ from rest_framework import serializers
 from library.models import Book,Borrow_record
 from django.utils import timezone
 from datetime import timedelta
+from .services import calculate_fine
+import zoneinfo
 
 # Get all books Serializer
 class BookSerializer(serializers.ModelSerializer):
@@ -11,6 +13,9 @@ class BookSerializer(serializers.ModelSerializer):
 
 # Borrow Book Serializer
 class BorrowBookSerializer(serializers.ModelSerializer):
+    expected_return_date = serializers.DateTimeField(
+        default_timezone=zoneinfo.ZoneInfo("Asia/Kolkata")
+    )
     class Meta:
         model = Borrow_record
         fields = ['expected_return_date', 'book_id']

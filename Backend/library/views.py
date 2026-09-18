@@ -5,6 +5,7 @@ from rest_framework import status
 from library.models import Book,Borrow_record
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
+from .services import calculate_fine
 
 # Get all Books
 class GetBooksAPIView(APIView):
@@ -38,5 +39,11 @@ class ReturnBookAPIView(APIView):
             record.save()
             book.available = True
             book.save()
+            serializer.validated_data['request'] = request
+
+            calculate_fine(serializer.validated_data)
 
             return Response({"message": f"{book} is returned successfully"})
+
+class GetFineAPIView(APIView):
+    pass

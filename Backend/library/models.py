@@ -18,3 +18,19 @@ class Borrow_record(models.Model):
     borrowed_date = models.DateTimeField(auto_now_add=True) 
     expected_return_date = models.DateTimeField()
     return_date = models.DateTimeField(blank=True,null=True)
+
+class Fine(models.Model):
+
+    STATUS = [
+        ("paid", "Paid"),
+        ("unpaid", "Unpaid"),
+        ("waived", "Waived")
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT)
+    book = models.ForeignKey(Book,on_delete=models.CASCADE)
+    borrow_record = models.OneToOneField(Borrow_record,on_delete=models.PROTECT)
+    amount = models.DecimalField(max_digits=8, decimal_places=2)
+    fine_days = models.IntegerField()
+    status = models.CharField(max_length=20, choices=STATUS)
+    created_at = models.DateTimeField(auto_now_add=True)

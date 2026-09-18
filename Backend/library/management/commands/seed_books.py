@@ -61,7 +61,7 @@ class Command(BaseCommand):
             book, created = Book.objects.get_or_create(
                 title=title,
                 author=author,
-                defaults={"catagory": category},
+                defaults={"category": category},
             )
             if created:
                 created_count += 1
