@@ -2,13 +2,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from library.serializers import BookSerializer,BorrowBookSerializer,ReturnBookSerializer
 from rest_framework import status
-from library.models import Book,Borrow_record
+from library.models import Book,Borrow_record,Fine
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from .services import calculate_fine
-
+from drf_spectacular.utils import extend_schema,OpenApiResponse
 # Get all Books
 class GetBooksAPIView(APIView):
+    @extend_schema(
+    request=None,
+    responses=BookSerializer)
     def get(self,request):
         books = Book.objects.all()
         serializer = BookSerializer(books,many=True)
@@ -16,6 +19,10 @@ class GetBooksAPIView(APIView):
 
 # Borrow Book 
 class BorrowBookAPIView(APIView):
+
+    @extend_schema(request=BorrowBookSerializer,
+     responses={200: OpenApiResponse(description="Book borrowed successfully")})
+
     def post(self, request):
         serializer = BorrowBookSerializer(data=request.data, context={"request": request})
         if serializer.is_valid(raise_exception=True):
@@ -29,6 +36,10 @@ class BorrowBookAPIView(APIView):
 
 # Return Book 
 class ReturnBookAPIView(APIView):
+
+    @extend_schema(
+    request=ReturnBookSerializer,
+    responses={200: OpenApiResponse(description="Book Returned successfully")})
     def post(self,request):
         serializer = ReturnBookSerializer(data=request.data, context={"request": request})
         if serializer.is_valid(raise_exception=True):
@@ -46,4 +57,6 @@ class ReturnBookAPIView(APIView):
             return Response({"message": f"{book} is returned successfully"})
 
 class GetFineAPIView(APIView):
-    pass
+    def get(self,request):
+        fine = Fine.objects.filter(user=request.user)
+        return Response({"message": "success", "fine": fine})
