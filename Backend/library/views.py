@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView 
-from library.serializers import BookSerializer,BorrowBookSerializer,ReturnBookSerializer,GetFineSerializer
+from library.serializers import BookSerializer,BorrowBookSerializer,ReturnBookSerializer,GetFineSerializer,MyBooksSerializer,PayFineSerializer
 from rest_framework import status
 from library.models import Book,Borrow_record,Fine
 from rest_framework.permissions import AllowAny
@@ -31,7 +31,7 @@ class BorrowBookAPIView(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save(user=request.user)
 
-        book = serializer.validated_data['book_id']
+        book = serializer.validated_data['book']
         book.available = False
         book.save()
 
@@ -55,8 +55,33 @@ class ReturnBookAPIView(APIView):
 
             return Response({"message": f"{book} is returned successfully"})
 
+# Get User's Fine
 class GetFineAPIView(APIView):
     def get(self,request):
         fine = Fine.objects.filter(user=request.user,status="unpaid")
         serializer = GetFineSerializer(fine, many=True)
         return Response({"fine": serializer.data})
+
+# MyBooks
+class MyBooks(APIView):
+    def get(self,request):
+        books = Borrow_record.objects.filter(user=request.user,return_date=None)
+        if not books.exists():
+            return Response("You haven't borrow any book")
+        serializer = MyBooksSerializer(books, many=True) 
+        return Response({"books": serializer.data})
+
+#Pay Fine
+class PayFine(APIView):
+    def post(self,request):
+        serializer = PayFineSerializer(data=request.data,context={"request": request})
+        if serializer.is_valid(raise_exception=True):
+            fine = serializer.validated_data['fine_id']
+            fine.status = 'paid'
+            fine.save()
+            return Response({"message": "Fine paid successfully"})
+
+
+
+
+
