@@ -1,6 +1,4 @@
 from .models import Fine
-from django.utils import timezone
-from datetime import datetime
 
 def calculate_fine(data):
     book = data.get('book')
@@ -11,7 +9,7 @@ def calculate_fine(data):
         full_due_days = record.return_date - record.expected_return_date
         due_days = full_due_days.days
         if due_days == 0:
-            amount = 0
+            return data
         else:
             amount = due_days * 100
 

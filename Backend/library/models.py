@@ -13,7 +13,7 @@ class Book(models.Model):
         return self.title 
     
 class Borrow_record(models.Model):
-    book_id = models.ForeignKey(Book,on_delete=models.CASCADE)
+    book = models.ForeignKey(Book,on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     borrowed_date = models.DateTimeField(auto_now_add=True) 
     expected_return_date = models.DateTimeField()
@@ -28,7 +28,7 @@ class Fine(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.PROTECT)
-    book = models.ForeignKey(Book,on_delete=models.CASCADE)
+    book = models.ForeignKey(Book,on_delete=models.PROTECT)
     borrow_record = models.OneToOneField(Borrow_record,on_delete=models.PROTECT)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     fine_days = models.IntegerField()

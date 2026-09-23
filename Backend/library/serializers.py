@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from library.models import Book,Borrow_record
+from library.models import Book,Borrow_record,Fine
 from django.utils import timezone
 from datetime import timedelta
 from .services import calculate_fine
@@ -66,3 +66,8 @@ class ReturnBookSerializer(serializers.Serializer):
             "book": book,
             "record": record}
         return mydata
+
+class GetFineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fine
+        fields = '__all__'

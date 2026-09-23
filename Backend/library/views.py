@@ -1,45 +1,44 @@
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from library.serializers import BookSerializer,BorrowBookSerializer,ReturnBookSerializer
+from rest_framework.filters import OrderingFilter
+from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView 
+from library.serializers import BookSerializer,BorrowBookSerializer,ReturnBookSerializer,GetFineSerializer
 from rest_framework import status
 from library.models import Book,Borrow_record,Fine
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from .services import calculate_fine
 from drf_spectacular.utils import extend_schema,OpenApiResponse
+from .filter import BookFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 # Get all Books
-class GetBooksAPIView(APIView):
-    @extend_schema(
-    request=None,
-    responses=BookSerializer)
-    def get(self,request):
-        books = Book.objects.all()
-        serializer = BookSerializer(books,many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class GetBooksAPIView(ListAPIView):
+    serializer_class = BookSerializer
+    ordering_fields = ['title','author','category']
+    ordering = ['title', 'id']
+    filterset_class = BookFilter    
+    filter_backends = [DjangoFilterBackend,OrderingFilter]    
+
+    def get_queryset(self):
+        queryset = Book.objects.all()
+        return queryset
 
 # Borrow Book 
 class BorrowBookAPIView(APIView):
-
-    @extend_schema(request=BorrowBookSerializer,
-     responses={200: OpenApiResponse(description="Book borrowed successfully")})
-
     def post(self, request):
         serializer = BorrowBookSerializer(data=request.data, context={"request": request})
         if serializer.is_valid(raise_exception=True):
             serializer.save(user=request.user)
-        
+
         book = serializer.validated_data['book_id']
         book.available = False
         book.save()
 
-        return Response({"message:": f"you have successfully borrowed {book}"})
+        return Response({"message": f"you have successfully borrowed {book}"})
 
 # Return Book 
 class ReturnBookAPIView(APIView):
-
-    @extend_schema(
-    request=ReturnBookSerializer,
-    responses={200: OpenApiResponse(description="Book Returned successfully")})
     def post(self,request):
         serializer = ReturnBookSerializer(data=request.data, context={"request": request})
         if serializer.is_valid(raise_exception=True):
@@ -58,5 +57,6 @@ class ReturnBookAPIView(APIView):
 
 class GetFineAPIView(APIView):
     def get(self,request):
-        fine = Fine.objects.filter(user=request.user)
-        return Response({"message": "success", "fine": fine})
+        fine = Fine.objects.filter(user=request.user,status="unpaid")
+        serializer = GetFineSerializer(fine, many=True)
+        return Response({"fine": serializer.data})
