@@ -37,7 +37,7 @@ class LoginAPIView(APIView):
             login(request, user)
             return Response({"message": f"{request.user} successfully logged in"}, status=status.HTTP_200_OK)
 
-        return Response({"message": "invaild credentials"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
 # Logout
 class LogoutAPIView(APIView):

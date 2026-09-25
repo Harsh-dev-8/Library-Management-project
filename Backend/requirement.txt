@@ -9,8 +9,10 @@ django-stubs-ext==6.1.1
 djangorestframework==3.18.0
 dotenv==0.9.9
 drf-spectacular==0.30.0
+factory_boy==3.3.3
+Faker==40.39.0
 inflection==0.5.1
-jsonschema==4.26.1
+jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 nodejs-wheel-binaries==24.19.0
 psycog==0.0.1

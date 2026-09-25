@@ -35,7 +35,7 @@ class BorrowBookAPIView(APIView):
         book.available = False
         book.save()
 
-        return Response({"message": f"you have successfully borrowed {book}"})
+        return Response({"message": f"you have successfully borrowed {book}"},status=status.HTTP_201_CREATED)
 
 # Return Book 
 class ReturnBookAPIView(APIView):

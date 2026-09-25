@@ -4,6 +4,8 @@ from django.utils import timezone
 from datetime import timedelta
 from .services import calculate_fine
 import zoneinfo
+from rest_framework import status
+from .custom_exceptions import ConflictException,ForbiddenException
 
 # Get all books Serializer
 class BookSerializer(serializers.ModelSerializer):
@@ -22,9 +24,9 @@ class BorrowBookSerializer(serializers.ModelSerializer):
 
     def validate_book(self,data):
         if not data.available:
-            raise serializers.ValidationError("The Book is unavailable")
+            raise ConflictException(detail={"book": "book is unavailable"})
         return data
-        
+
     def validate_expected_return_date(self,data):
         if data <= timezone.now():
             raise serializers.ValidationError("Date must be in future!")
@@ -39,12 +41,12 @@ class BorrowBookSerializer(serializers.ModelSerializer):
 
         # Couldn't borrow more than 5 books!
         record = Borrow_record.objects.filter(user=user,return_date=None).count()
-        if record >= 6:
-            raise serializers.ValidationError("You can't borrow more than 5 books!")
+        if record >= 5:
+            raise ForbiddenException(detail={"message": "You can't borrow more than 5 books!"})
         # Couldn't borrow if fine is 3+
         fine = Fine.objects.filter(user=user,status='unpaid').count()
         if fine >= 3:
-            raise serializers.ValidationError("You have to pay your fines to borrow more books!")
+            raise ForbiddenException(detail={"message": "You have to pay your fine to borrow more books"})
         return data
 
 # Return Book Serializer
