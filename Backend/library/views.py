@@ -53,7 +53,7 @@ class ReturnBookAPIView(APIView):
 
             calculate_fine(serializer.validated_data)
 
-            return Response({"message": f"{book} is returned successfully"})
+            return Response({"message": f"{book} is returned successfully"}, status=status.HTTP_200_OK)
 
 # Get User's Fine
 class GetFineAPIView(APIView):
@@ -79,7 +79,7 @@ class PayFine(APIView):
             fine = serializer.validated_data['fine_id']
             fine.status = 'paid'
             fine.save()
-            return Response({"message": "Fine paid successfully"})
+            return Response({"message": "Fine paid successfully"},status=status.HTTP_200_OK)
 
 
 

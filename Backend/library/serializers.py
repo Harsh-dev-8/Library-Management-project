@@ -57,16 +57,16 @@ class ReturnBookSerializer(serializers.Serializer):
         try:
             book = Book.objects.get(id=data['book'])
         except Book.DoesNotExist:
-            raise serializers.ValidationError("Book doesn't exist")
+            raise serializers.ValidationError({"message": "Book doesn't exist"})
         
         if book.available:
-            raise serializers.ValidationError("You haven't borrowed this book!")
+            raise serializers.ValidationError({"message": "You haven't borrowed this book!"})
 
         user = self.context['request'].user
         try:
             record = Borrow_record.objects.get(user=user,book=book,return_date=None)
         except Borrow_record.DoesNotExist:
-            raise serializers.ValidationError("record doesn't exist")
+            raise serializers.ValidationError({"message": "Record doesn't exist"})
         
         mydata = {
             "book": book,
@@ -95,5 +95,5 @@ class PayFineSerializer(serializers.Serializer):
         try:
             fine = Fine.objects.get(id=data,user=user,status='unpaid')
         except Fine.DoesNotExist:
-            raise serializers.ValidationError("Fine doesn't exist")
+            raise serializers.ValidationError({"message": "Invalid field!"})
         return fine
