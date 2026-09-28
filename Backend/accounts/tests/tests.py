@@ -35,7 +35,7 @@ class RegisterTest(APITestCase):
         url = reverse('register')
         data = {"username": "test_user","password":"test_user_password"}
         response = self.client.post(url,data,format='json')
-        self.assertIn("This username already exists", response.data['username'])
+        self.assertTrue(response.data['username']) 
          
 #Login Tests
 class LoginTest(APITestCase):

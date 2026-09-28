@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library &mdash; Dashboard</title>
+    
+    <!-- Google Fonts for scholarly theme -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <header class="navbar">
+            <a href="home.html" class="nav-brand">
+                <svg class="nav-brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
+                    <path d="M6 6h10"></path>
+                    <path d="M6 10h10"></path>
+                </svg>
+                <span class="nav-brand-title">Library</span>
+            </a>
+
+
+            <div class="nav-actions">
+                <a href="#" class="logout-btn" id="myBorrowsLink">My Borrows</a>
+                <a href="#" class="logout-btn" id="finesLink">Fines</a>
+                <a href="login.html" id="logoutBtn" class="logout-btn">Sign Out</a>
+            </div>
+        </header>
+
+        <!-- Hero Welcome Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <span class="hero-kicker">Welcome back, Scholar</span>
+                <h1 class="hero-title">Explore over 50,000 literary works & archives</h1>
+                <p class="hero-subtitle">Discover new arrivals, reserve research materials, and track your active library checkouts in one unified portal.</p>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Borrowed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Read This Year</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Catalog Toolbar -->
+        <div class="toolbar">
+            <h2 class="section-heading">Featured Collection</h2>
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Catalog Grid -->
+        <main class="catalog-grid">
+            <!-- Dynamically populated via home.js -->
+        </main>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-container" id="paginationContainer">
+            <button id="prevBtn" class="pagination-btn" disabled>&larr; Previous</button>
+            <span id="pageInfo" class="pagination-info">Page 1</span>
+            <button id="nextBtn" class="pagination-btn" disabled>Next &rarr;</button>
+        </div>
+
+        <!-- Dashboard Footer -->
+        <footer class="dashboard-footer">
+            <p>&copy; 2026 Athenaeum Library Management System. All rights reserved.</p>
+            <p>Encrypted Scholarly Network &bull; Version 2.0</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../javascript/home.js" defer></script>
+    <script src="../javascript/borrow.js" defer></script>
+    <script src="../javascript/logout.js" defer></script>
+</body>
+</html>

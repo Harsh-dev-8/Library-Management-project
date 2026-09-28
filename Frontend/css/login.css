@@ -1,0 +1,263 @@
+/* ==========================================================================
+   Library Management System - Login Theme (Single Card / Independent Fields)
+   Aesthetics: Minimalist, Scholarly, Serene, Soft, Patience Colors
+   ========================================================================== */
+
+:root {
+    --bg-canvas: #f6f4ee;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #faf8f4;
+    --bg-subtle: #efece4;
+    
+    --primary: #2d4a3e;          /* Deep archivist sage */
+    --primary-hover: #223a30;
+    --primary-light: #e6ede9;    /* Gentle sage wash */
+    
+    --accent: #b89753;           /* Muted warm brass / antique gold */
+    
+    --text-main: #1c2420;        /* Deep charcoal-moss for supreme legibility */
+    --text-muted: #627267;       /* Calmed secondary slate */
+    --text-subtle: #95a399;
+    
+    --border-light: #e4dfd4;     /* Refined natural boundary */
+    --border-focus: #3d6050;
+    --ring-focus: rgba(45, 74, 62, 0.12);
+    
+    --shadow-card: 0 30px 60px -15px rgba(35, 48, 40, 0.08), 0 10px 25px -10px rgba(35, 48, 40, 0.04);
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-xl: 24px;
+    
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Lora', Georgia, serif;
+    
+    --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-canvas);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient Background Atmosphere */
+body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        radial-gradient(circle at 15% 15%, rgba(215, 226, 219, 0.5) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(238, 230, 218, 0.5) 0%, transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.page-container {
+    width: 100%;
+    max-width: 460px;
+    margin: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Main Login Card (.main) */
+.main {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-light);
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.main h1 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.02em;
+}
+
+.main h3 {
+    font-size: 0.925rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+/* Independent Fields Container */
+.auth-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.field-group label {
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: 0.01em;
+}
+
+/* Input Wrappers */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    pointer-events: none;
+    width: 18px;
+    height: 18px;
+}
+
+.input-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.main input[type="text"],
+.main input[type="password"] {
+    width: 100%;
+    height: 48px;
+    padding: 0 1rem 0 2.85rem;
+    background-color: var(--bg-surface-elevated);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    color: var(--text-main);
+    transition: var(--transition-smooth);
+}
+
+.main input[type="text"]::placeholder,
+.main input[type="password"]::placeholder {
+    color: var(--text-subtle);
+    font-weight: 300;
+}
+
+.main input[type="text"]:focus,
+.main input[type="password"]:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    background-color: var(--bg-surface);
+    box-shadow: 0 0 0 4px var(--ring-focus);
+}
+
+/* Password Toggle Button */
+.password-toggle {
+    position: absolute;
+    right: 0.85rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: var(--transition-smooth);
+}
+
+.password-toggle:hover {
+    color: var(--text-main);
+    background-color: var(--bg-subtle);
+}
+
+.password-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Wrap & Submit Button */
+.wrap {
+    margin-top: 0.5rem;
+}
+
+#submit {
+    width: 100%;
+    height: 48px;
+    background-color: var(--primary);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(45, 74, 62, 0.2);
+    transition: var(--transition-smooth);
+}
+
+#submit:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 6px 16px rgba(45, 74, 62, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Error message banner / Response Message */
+.error-message, .response-message {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+    display: none;
+    border: 1px solid var(--border-light);
+    word-break: break-word;
+}
+
+/* Register Link Footer */
+.register-text {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.register-text a {
+    color: var(--primary);
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.register-text a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}

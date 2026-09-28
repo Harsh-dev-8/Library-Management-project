@@ -22,7 +22,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         try:
             user = User.objects.create_user(password=password, **validated_data)
         except IntegrityError:
-            raise serializers.ValidationError({"username": "This username already exists"})
+            raise serializers.ValidationError({"username": "Invaild Username field"})
 
         return user
 
