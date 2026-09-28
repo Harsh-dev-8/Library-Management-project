@@ -1,20 +1,7 @@
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+import { libraryService } from './api/library.service.js';
 
 document.addEventListener("DOMContentLoaded", () => {
-    const csrftoken = getCookie('csrftoken');
+    let selectedBookId = null;
 
     // Create Borrow Modal HTML
     const borrowModalHtml = `
@@ -98,8 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const finesBody = document.getElementById("finesBody");
     const finesLink = document.getElementById("finesLink") || Array.from(document.querySelectorAll(".logout-btn")).find(el => el.textContent.trim() === "Fines");
 
-    let selectedBookId = null;
-
     function getDefaultReturnDate() {
         const d = new Date();
         d.setDate(d.getDate() + 7);
@@ -135,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         borrowModal.classList.remove("active");
     });
 
-    confirmBorrowBtn.addEventListener("click", () => {
+    confirmBorrowBtn.addEventListener("click", async () => {
         if (!selectedBookId) return;
 
         const expectedReturnDate = expectedReturnDateInput.value;
@@ -151,27 +136,12 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmBorrowBtn.disabled = true;
         confirmBorrowBtn.textContent = "Borrowing...";
 
-        fetch("http://127.0.0.1:8000/api/v1/BorrowBook/", {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-            },
-            body: JSON.stringify({
+        try {
+            const data = await libraryService.borrowBook({
                 "book": parseInt(selectedBookId, 10),
                 "expected_return_date": formattedDate
-            })
-        })
-        .then(response => {
-            return response.json().then(data => {
-                if (!response.ok) {
-                    throw data;
-                }
-                return data;
             });
-        })
-        .then(data => {
+
             borrowModalMsg.textContent = data.message || "Book borrowed successfully!";
             borrowModalMsg.className = "modal-msg success";
             borrowModalMsg.style.display = "block";
@@ -180,31 +150,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 borrowModal.classList.remove("active");
                 window.location.reload();
             }, 1000);
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Borrow error:", error);
+            const errData = error.data || error;
             let errMsg = "Failed to borrow book.";
-            if (typeof error === 'object' && error !== null) {
+            if (typeof errData === 'object' && errData !== null) {
                 const parts = [];
-                for (const k in error) {
-                    if (Array.isArray(error[k])) {
-                        parts.push(`${k}: ${error[k].join(', ')}`);
+                for (const k in errData) {
+                    if (Array.isArray(errData[k])) {
+                        parts.push(`${k}: ${errData[k].join(', ')}`);
                     } else {
-                        parts.push(`${k}: ${error[k]}`);
+                        parts.push(`${k}: ${errData[k]}`);
                     }
                 }
                 errMsg = parts.join(' | ');
-            } else if (typeof error === 'string') {
-                errMsg = error;
+            } else if (typeof errData === 'string') {
+                errMsg = errData;
             }
             borrowModalMsg.textContent = errMsg;
             borrowModalMsg.className = "modal-msg error";
             borrowModalMsg.style.display = "block";
-        })
-        .finally(() => {
+        } finally {
             confirmBorrowBtn.disabled = false;
             confirmBorrowBtn.textContent = "Confirm Borrow";
-        });
+        }
     });
 
     // My Borrows click handler
@@ -239,26 +208,11 @@ document.addEventListener("DOMContentLoaded", () => {
         finesModal.classList.remove("active");
     });
 
-    function fetchMyBorrows() {
+    async function fetchMyBorrows() {
         myBorrowsBody.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading your borrowed books...</p>`;
 
-        fetch("http://127.0.0.1:8000/api/v1/MyBooks/", {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-            }
-        })
-        .then(response => {
-            return response.json().then(data => {
-                if (!response.ok) {
-                    throw data;
-                }
-                return data;
-            });
-        })
-        .then(data => {
+        try {
+            const data = await libraryService.getMyBooks();
             let borrowRecords = [];
             if (Array.isArray(data)) {
                 borrowRecords = data;
@@ -292,21 +246,21 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             html += `</div>`;
             myBorrowsBody.innerHTML = html;
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Error fetching My Borrows:", error);
+            const errData = error.data || error;
             let msg = "You haven't borrowed any book";
-            if (typeof error === 'string') {
-                msg = error;
-            } else if (error && error.detail) {
-                msg = error.detail;
+            if (typeof errData === 'string') {
+                msg = errData;
+            } else if (errData && errData.message) {
+                msg = errData.message;
             }
             myBorrowsBody.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">${escapeHtml(msg)}</p>`;
-        });
+        }
     }
 
-    // Event listener for Return Book buttons inside My Borrows modal
-    myBorrowsBody.addEventListener("click", (e) => {
+    // Return book event delegation
+    myBorrowsBody.addEventListener("click", async (e) => {
         if (e.target && e.target.classList.contains("return-book-btn")) {
             const btn = e.target;
             const bookId = btn.getAttribute("data-book-id");
@@ -315,127 +269,86 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.disabled = true;
             btn.textContent = "Returning...";
 
-            fetch("http://127.0.0.1:8000/api/v1/ReturnBook/", {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-                },
-                body: JSON.stringify({
+            try {
+                const data = await libraryService.returnBook({
                     "book": parseInt(bookId, 10)
-                })
-            })
-            .then(response => {
-                return response.json().then(data => {
-                    if (!response.ok) {
-                        throw data;
-                    }
-                    return data;
                 });
-            })
-            .then(data => {
                 alert(data.message || "Book returned successfully!");
                 fetchMyBorrows();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            })
-            .catch(error => {
+                setTimeout(() => window.location.reload(), 800);
+            } catch (error) {
                 console.error("Return error:", error);
+                const errData = error.data || error;
                 let errMsg = "Failed to return book.";
-                if (typeof error === 'object' && error !== null) {
+                if (typeof errData === 'object' && errData !== null) {
                     const parts = [];
-                    for (const k in error) {
-                        if (Array.isArray(error[k])) {
-                            parts.push(`${k}: ${error[k].join(', ')}`);
-                        } else {
-                            parts.push(`${k}: ${error[k]}`);
-                        }
+                    for (const k in errData) {
+                        parts.push(`${k}: ${errData[k]}`);
                     }
                     errMsg = parts.join(' | ');
-                } else if (typeof error === 'string') {
-                    errMsg = error;
+                } else if (typeof errData === 'string') {
+                    errMsg = errData;
                 }
                 alert(errMsg);
                 btn.disabled = false;
                 btn.textContent = "Return";
-            });
+            }
         }
     });
 
-    function fetchFines() {
+    async function fetchFines() {
         finesBody.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading your fines...</p>`;
 
-        fetch("http://127.0.0.1:8000/api/v1/GetFine/", {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-            }
-        })
-        .then(response => {
-            return response.json().then(data => {
-                if (!response.ok) {
-                    throw data;
-                }
-                return data;
-            });
-        })
-        .then(data => {
-            let finesList = [];
+        try {
+            const data = await libraryService.getFines();
+            let fines = [];
             if (Array.isArray(data)) {
-                finesList = data;
-            } else if (data && Array.isArray(data.fine)) {
-                finesList = data.fine;
-            } else if (data && typeof data === 'object') {
-                const foundKey = Object.keys(data).find(k => Array.isArray(data[k]));
-                if (foundKey) {
-                    finesList = data[foundKey];
-                }
+                fines = data;
+            } else if (data && Array.isArray(data.fines)) {
+                fines = data.fines;
+            } else if (typeof data === 'string') {
+                finesBody.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">${escapeHtml(data)}</p>`;
+                return;
             }
 
-            if (!finesList || finesList.length === 0) {
+            if (!fines || fines.length === 0) {
                 finesBody.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">You have no unpaid fines.</p>`;
                 return;
             }
 
             let html = `<div style="display: flex; flex-direction: column; gap: 1rem;">`;
-            for (const fine of finesList) {
-                const fineId = fine.id;
+            for (const fine of fines) {
                 const amount = fine.amount !== undefined ? fine.amount : "0.00";
-                const fineDays = fine.fine_days !== undefined ? fine.fine_days : 0;
-                const status = fine.status || "unpaid";
-                const bookId = fine.book || "N/A";
+                const fineId = fine.id;
+                const bookId = fine.book;
 
                 html += `
                     <div style="background-color: var(--bg-canvas); border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
                         <div>
-                            <h4 style="font-size: 1rem; font-weight: 600; color: #9b1c1c; margin-bottom: 0.25rem;">Fine Amount: ₹${escapeHtml(String(amount))}</h4>
-                            <p style="font-size: 0.85rem; color: var(--text-muted);">Fine ID: ${escapeHtml(String(fineId))} &bull; Book ID: ${escapeHtml(String(bookId))} &bull; Days: ${escapeHtml(String(fineDays))}</p>
+                            <h4 style="font-size: 1rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.25rem;">Fine ID: ${fineId} (Book ID: ${bookId})</h4>
+                            <p style="font-size: 0.9rem; color: #9b1c1c; font-weight: 600;">Amount: $${escapeHtml(String(amount))}</p>
                         </div>
-                        <button class="modal-btn-primary pay-fine-btn" data-fine-id="${fineId}" style="padding: 0.5rem 1rem; font-size: 0.85rem; white-space: nowrap; background-color: #9b1c1c;">Pay Fine</button>
+                        <button class="modal-btn-primary pay-fine-btn" data-fine-id="${fineId}" style="padding: 0.5rem 1rem; font-size: 0.85rem; white-space: nowrap; background-color: #046c4e;">Pay Fine</button>
                     </div>
                 `;
             }
             html += `</div>`;
             finesBody.innerHTML = html;
-        })
-        .catch(error => {
+        } catch (error) {
             console.error("Error fetching fines:", error);
-            let msg = "You have no unpaid fines.";
-            if (typeof error === 'string') {
-                msg = error;
-            } else if (error && error.detail) {
-                msg = error.detail;
+            const errData = error.data || error;
+            let msg = "You have no unpaid fines";
+            if (typeof errData === 'string') {
+                msg = errData;
+            } else if (errData && errData.message) {
+                msg = errData.message;
             }
             finesBody.innerHTML = `<p style="text-align: center; color: var(--text-muted); padding: 1.5rem;">${escapeHtml(msg)}</p>`;
-        });
+        }
     }
 
-    // Event listener for Pay Fine buttons inside Fines modal
-    finesBody.addEventListener("click", (e) => {
+    // Pay fine event delegation
+    finesBody.addEventListener("click", async (e) => {
         if (e.target && e.target.classList.contains("pay-fine-btn")) {
             const btn = e.target;
             const fineId = btn.getAttribute("data-fine-id");
@@ -444,49 +357,29 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.disabled = true;
             btn.textContent = "Processing...";
 
-            fetch("http://127.0.0.1:8000/api/v1/PayFine/", {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-                },
-                body: JSON.stringify({
-                    "fine_id": parseInt(fineId, 10)
-                })
-            })
-            .then(response => {
-                return response.json().then(data => {
-                    if (!response.ok) {
-                        throw data;
-                    }
-                    return data;
+            try {
+                const data = await libraryService.payFine({
+                    "id": parseInt(fineId, 10)
                 });
-            })
-            .then(data => {
                 alert(data.message || "Fine paid successfully!");
                 fetchFines();
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error("Pay fine error:", error);
+                const errData = error.data || error;
                 let errMsg = "Failed to pay fine.";
-                if (typeof error === 'object' && error !== null) {
+                if (typeof errData === 'object' && errData !== null) {
                     const parts = [];
-                    for (const k in error) {
-                        if (Array.isArray(error[k])) {
-                            parts.push(`${k}: ${error[k].join(', ')}`);
-                        } else {
-                            parts.push(`${k}: ${error[k]}`);
-                        }
+                    for (const k in errData) {
+                        parts.push(`${k}: ${errData[k]}`);
                     }
                     errMsg = parts.join(' | ');
-                } else if (typeof error === 'string') {
-                    errMsg = error;
+                } else if (typeof errData === 'string') {
+                    errMsg = errData;
                 }
                 alert(errMsg);
                 btn.disabled = false;
                 btn.textContent = "Pay Fine";
-            });
+            }
         }
     });
 

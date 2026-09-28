@@ -1,17 +1,4 @@
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+import { libraryService } from './api/library.service.js';
 
 document.addEventListener("DOMContentLoaded", () => {
     const catalogGrid = document.querySelector(".catalog-grid");
@@ -23,9 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let nextUrl = null;
     let prevUrl = null;
-
-    const csrftoken = getCookie('csrftoken');
-    const initialUrl = "http://127.0.0.1:8000/api/v1/GetBooks/";
 
     function showUnauthenticatedState() {
         const dashboardContainer = document.querySelector(".dashboard-container");
@@ -66,25 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
-    function fetchBooks(url) {
+    async function loadBooks(url = '/GetBooks/') {
         catalogGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 2rem;">Loading books...</p>`;
 
-        fetch(url, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-            }
-        })
-        .then(response => {
-            if (response.status === 401 || response.status === 403) {
-                showUnauthenticatedState();
-                throw new Error("Unauthenticated");
-            }
-            return response.json();
-        })
-        .then(data => {
+        try {
+            const data = await libraryService.getBooks(url);
             let books = [];
             if (Array.isArray(data)) {
                 books = data;
@@ -107,16 +77,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 prevUrl = data.previous_page || null;
             }
 
-            // Update pagination buttons state
-            if (prevBtn) {
-                prevBtn.disabled = !prevUrl;
-            }
-            if (nextBtn) {
-                nextBtn.disabled = !nextUrl;
-            }
+            if (prevBtn) prevBtn.disabled = !prevUrl;
+            if (nextBtn) nextBtn.disabled = !nextUrl;
             if (pageInfo) {
                 try {
-                    const urlObj = new URL(url);
+                    const fullUrl = url.startsWith('http') ? url : `http://dummybase${url}`;
+                    const urlObj = new URL(fullUrl);
                     const pageNum = urlObj.searchParams.get('page') || '1';
                     pageInfo.textContent = `Page ${pageNum}`;
                 } catch (e) {
@@ -156,20 +122,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
                 catalogGrid.appendChild(article);
             }
-        })
-        .catch(error => {
-            if (error.message === "Unauthenticated") return;
+        } catch (error) {
+            if (error.status === 401 || error.status === 403) {
+                showUnauthenticatedState();
+                return;
+            }
             console.error('Error fetching books:', error);
             catalogGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #9b1c1c; padding: 2rem;">Failed to load catalog books from backend.</p>`;
             if (prevBtn) prevBtn.disabled = true;
             if (nextBtn) nextBtn.disabled = true;
-        });
+        }
     }
 
     if (prevBtn) {
         prevBtn.addEventListener("click", () => {
             if (prevUrl) {
-                fetchBooks(prevUrl);
+                loadBooks(prevUrl);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
@@ -178,13 +146,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nextBtn) {
         nextBtn.addEventListener("click", () => {
             if (nextUrl) {
-                fetchBooks(nextUrl);
+                loadBooks(nextUrl);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         });
     }
 
-    fetchBooks(initialUrl);
+    loadBooks('/GetBooks/');
 
     function escapeHtml(str) {
         if (!str) return '';
