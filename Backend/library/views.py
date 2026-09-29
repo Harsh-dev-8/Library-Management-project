@@ -11,8 +11,11 @@ from .services import calculate_fine
 from drf_spectacular.utils import extend_schema,OpenApiResponse
 from .filter import BookFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 # Get all Books
+@method_decorator(ensure_csrf_cookie, name='dispatch')
 class GetBooksAPIView(ListAPIView):
     serializer_class = BookSerializer
     ordering_fields = ['title','author','category']

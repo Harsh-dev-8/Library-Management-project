@@ -60,7 +60,7 @@ A full-stack library system with librarian and member roles, borrowing limits, a
 ```bash
    cp .env.example .env
 ```
-   Never commit your `.env` file.
+   Never commit your `.env` file. <br>
 5. Run the migrations and start the server:
 ```bash
    python manage.py migrate
@@ -80,7 +80,7 @@ python manage.py test
 - Session authentication and CSRF protection when the frontend and backend are on different domains
 - Writing tests for the borrow, return and fine logic
 - Deploying a backend and a frontend separately, and handling environment variables safely
-- For next project i will make different than CRUDs more with monitoring, observability, servers, infra etc
+- Next project: going beyond CRUD, toward monitoring, observability, and infra.
 ## Author
  
 Harsh: [GitHub](https://github.com/Harsh-dev-8)
