@@ -1,11 +1,21 @@
 import { authService } from './api/auth.service.js';
 
 document.getElementById("submit").addEventListener("click", async function () {
+    const submitBtn = document.getElementById("submit");
     const fname = document.getElementById("fname").value;
     const lname = document.getElementById("lname").value;
     const username = document.getElementById("username").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+
+    if (!username || !password || !email) {
+        showResponseMsg("Please fill in all required fields.");
+        return;
+    }
+
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Registering... (Waking up server)";
 
     try {
         const data = await authService.register({
@@ -23,6 +33,8 @@ document.getElementById("submit").addEventListener("click", async function () {
         console.error('Registration error:', error);
         const errorData = error.data || error;
         showResponseMsg(errorData);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 });
 

@@ -1,8 +1,18 @@
 import { authService } from './api/auth.service.js';
 
 document.getElementById("submit").addEventListener("click", async function () {
+    const submitBtn = document.getElementById("submit");
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
+
+    if (!username || !password) {
+        showResponseMsg("Please enter both username and password.");
+        return;
+    }
+
+    submitBtn.disabled = true;
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Signing in... (Waking up server)";
 
     try {
         const data = await authService.login({ username, password });
@@ -14,6 +24,8 @@ document.getElementById("submit").addEventListener("click", async function () {
         console.error('Login error:', error);
         const errorData = error.data || error;
         showResponseMsg(errorData);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 });
 
