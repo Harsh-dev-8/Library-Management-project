@@ -2,9 +2,9 @@
  
 A full-stack library system with librarian and member roles, borrowing limits, and automatic late-fine calculation. Built with Django, Django REST Framework and PostgreSQL, deployed with tests and API docs. This is my first complete project.
  
-**Live demo:** https://harsh-library.netlify.app/
-**API docs (Swagger):** https://library-3o9m.onrender.com/api/docs/
-**Backend (Render):** https://library-3o9m.onrender.com
+**Live demo:** https://harsh-library.netlify.app/ <br>
+**API docs: (Swagger):** https://library-3o9m.onrender.com/api/docs/ <br>
+**Backend: (Render):** https://library-3o9m.onrender.com
  
 > The backend runs on Render's free tier, so the first request after an idle period can take up to a minute. Please be patient.
  
@@ -18,7 +18,7 @@ A full-stack library system with librarian and member roles, borrowing limits, a
  
 ![Book list](screenshots/books.png)
 ![Login page](screenshots/login.png)
-![Register page](screenshots/register.png)
+![Auth page](screenshots/auth.png)
  
 ## Features
  
