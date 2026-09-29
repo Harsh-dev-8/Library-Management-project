@@ -1,5 +1,24 @@
 import { API_BASE_URL } from '../config.js';
 
+let cachedCsrfToken = null;
+
+async function fetchCsrfToken() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/csrf/`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.csrfToken) {
+                cachedCsrfToken = data.csrfToken;
+            }
+        }
+    } catch (err) {
+        console.error('Failed to fetch CSRF token:', err);
+    }
+}
+
 /**
  * Retrieves a cookie value by name (e.g., csrftoken).
  */
@@ -23,7 +42,13 @@ export function getCookie(name) {
  */
 export async function apiRequest(endpoint, options = {}) {
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    const csrftoken = getCookie('csrftoken');
+    let csrftoken = getCookie('csrftoken') || cachedCsrfToken;
+    
+    const method = (options.method || 'GET').toUpperCase();
+    if (!csrftoken && method !== 'GET') {
+        await fetchCsrfToken();
+        csrftoken = getCookie('csrftoken') || cachedCsrfToken;
+    }
 
     const headers = {
         'Content-Type': 'application/json',
@@ -32,7 +57,7 @@ export async function apiRequest(endpoint, options = {}) {
     };
 
     const config = {
-        method: options.method || 'GET',
+        method,
         credentials: 'include',
         headers,
         ...options

@@ -4,6 +4,7 @@ from accounts.serializers import RegisterSerializer, LoginSerializer
 from rest_framework import status
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import AllowAny
+from django.middleware.csrf import get_token
 from drf_spectacular.utils import extend_schema,OpenApiResponse
 # Create your views here.
 
@@ -47,3 +48,12 @@ class LogoutAPIView(APIView):
     def get(self, request):
         logout(request)
         return Response({"message": f"{request.user} successfully logged out"}, status=status.HTTP_200_OK)
+
+# CSRF Token
+class CSRFTokenAPIView(APIView):
+    permission_classes = [AllowAny]
+    @extend_schema(
+        request=None,
+        responses={200: OpenApiResponse(description="Returns CSRF token")})
+    def get(self, request):
+        return Response({"csrfToken": get_token(request)})

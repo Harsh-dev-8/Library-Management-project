@@ -61,3 +61,11 @@ class LoginTest(APITestCase):
         response = self.client.post(url,data,format='json')
         self.assertEqual(response.status_code, 401)
         self.assertIn('invalid credentials', response.data['message'])
+
+class CSRFTokenTest(APITestCase):
+    def test_get_csrf_token(self):
+        url = reverse('csrf-token')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('csrfToken', response.data)
+        self.assertTrue(response.data['csrfToken'])
